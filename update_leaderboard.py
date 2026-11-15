@@ -262,6 +262,8 @@ def run_once(cfg, args):
         fresh = age < heartbeat
     if same and fresh:
         log("no change")
+        if not args.no_git:
+            push("Update leaderboard " + old["updated"])  # publishes a file left by an earlier --no-git run; no-op if already committed
         return
     atomic_write(out_path, json.dumps(new, ensure_ascii=False, separators=(",", ":")))
     log(f"wrote leaderboard.json ({len(new['players'])} players, top {new['players'][0]['w'] if new['players'] else 0})")
