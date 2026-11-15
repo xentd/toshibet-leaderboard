@@ -226,7 +226,6 @@ details p{padding:0 18px 18px;color:var(--muted)}
 <body>
 
 
-<div class="ribbon" id="ribbon" hidden><b>Preview</b>Sample data. These are not real players, wagers or payouts.</div>
 
 <header class="hero">
   <div class="hero__bg" aria-hidden="true">
@@ -351,7 +350,6 @@ details p{padding:0 18px 18px;color:var(--muted)}
     <div><span class="age" aria-label="18 plus">18+</span></div>
     <div>
       <p><strong style="color:var(--muted)">Please gamble responsibly.</strong> Gambling can be addictive and you can lose money. Only play with money you can afford to lose. Free support is available at <a href="https://www.begambleaware.org" target="_blank" rel="noopener">BeGambleAware.org</a>. Not available in restricted territories. Check the laws where you live.</p>
-      <p>This is an affiliate page. XENTED may earn a commission when you register through the link. Nothing here is financial advice and winnings are never guaranteed. ToshiBet trademarks and logos belong to their owners.</p>
       <p id="updated"></p>
     </div>
   </div>
@@ -530,7 +528,6 @@ details p{padding:0 18px 18px;color:var(--muted)}
     const newPool = d.prizes.reduce((a, b) => a + b, 0);
     topW = P.length && P[0].w > 0 ? P[0].w : 1;
     end = Date.parse(d.endsAt);
-    $('#ribbon').hidden = !d.demo;
     $('#period').textContent = 'XENTED presents · ' + d.period;
     $('#poolSub').textContent = `Shared across the top ${d.prizes.length} players`;
     document.querySelectorAll('.js-join').forEach(a => a.href = d.joinUrl);
@@ -538,7 +535,7 @@ details p{padding:0 18px 18px;color:var(--muted)}
     if (firstRender || newPool !== pool) { if (firstRender) countUp(newPool); else poolEl.textContent = money(newPool); }
     pool = newPool;
     const when = new Date(d.updated).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-    $('#updated').textContent = d.demo ? 'Preview build. All names and numbers on this page are sample data.' : 'Standings last updated ' + when + '.';
+    $('#updated').textContent = d.demo ? '' : 'Standings last updated ' + when + '.';
     firstRender = false;
     paintStamp(); tick();
     runSearch(lastQuery, false);   // keeps your highlighted rank across refreshes
