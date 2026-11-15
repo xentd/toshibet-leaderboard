@@ -1,0 +1,5 @@
+config.json
+players*.csv
+!players.sample.csv
+*.tmp
+__pycache__/

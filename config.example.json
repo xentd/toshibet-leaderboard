@@ -1,0 +1,10 @@
+{
+  "demo": false,
+  "period": "November 2026",
+  "ends_at": "2026-11-30T23:59:59Z",
+  "join_url": "https://toshi.bet/r/toshibetx",
+  "prizes": [200, 100, 60, 40, 30, 20, 15, 10, 5, 5],
+  "top_n": 50,
+  "heartbeat_minutes": 30,
+  "source": { "type": "csv", "path": "players.csv" }
+}
