@@ -248,7 +248,8 @@ def run_once(cfg, args):
 
     # safety checks so a broken export never wipes the live board
     if not args.force:
-        if not new["players"]:
+        # an empty source is only suspicious if the live board already has players
+        if not new["players"] and (old is None or old.get("players")):
             raise RuntimeError("source returned no valid players, keeping the old file (use --force to override)")
         if old and old.get("players") and not old.get("demo"):
             if new["players"][0]["w"] < old["players"][0]["w"] * 0.5:
