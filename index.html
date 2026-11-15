@@ -482,7 +482,7 @@ details p{padding:0 18px 18px;color:var(--muted)}
     const i = P.findIndex(p => p.h === fnv(q));
     if (i < 0) {
       out.innerHTML = `<div class="found found--miss"><b class="found__line">${P.length ? `Not in the top ${P.length} yet` : "Not on the board yet"}</b>
-        <span class="found__line"><span>Either this username is not tracked through the XENTED link, or it has not reached the board. Register through our link and start climbing.</span></span>
+        <span class="found__line"><span>Either this username is not tracked through the OFFICIAL link, or it has not reached the board. Register through our link and start climbing.</span></span>
         <a class="btn btn--sm js-join" href="${esc(C.joinUrl)}" target="_blank" rel="noopener sponsored">Join ToshiBet</a></div>`;
       renderPodium(); renderRows(); return;
     }
