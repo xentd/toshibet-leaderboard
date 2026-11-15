@@ -219,6 +219,7 @@ details p{padding:0 18px 18px;color:var(--muted)}
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 
+.stamp:empty{display:none}
 .stamp--stale{color:#ffb454}
 .stamp--stale::before{background:#ffb454;animation:none}
 </style>
@@ -393,7 +394,7 @@ details p{padding:0 18px 18px;color:var(--muted)}
   function paintStamp() {
     if (!C) return;
     stamp.classList.remove('stamp--demo', 'stamp--stale');
-    if (C.demo) { stamp.textContent = 'Sample data'; stamp.classList.add('stamp--demo'); return; }
+    if (C.demo) { stamp.textContent = ''; return; }
     const age = Date.now() - Date.parse(C.updated);
     const stale = age > STALE_MIN * 60000;
     stamp.textContent = 'Updated ' + ago(age) + (stale ? ' · may be delayed' : '');
@@ -480,7 +481,7 @@ details p{padding:0 18px 18px;color:var(--muted)}
     if (!C) return;
     const i = P.findIndex(p => p.h === fnv(q));
     if (i < 0) {
-      out.innerHTML = `<div class="found found--miss"><b class="found__line">Not in the top ${P.length} yet</b>
+      out.innerHTML = `<div class="found found--miss"><b class="found__line">${P.length ? `Not in the top ${P.length} yet` : "Not on the board yet"}</b>
         <span class="found__line"><span>Either this username is not tracked through the XENTED link, or it has not reached the board. Register through our link and start climbing.</span></span>
         <a class="btn btn--sm js-join" href="${esc(C.joinUrl)}" target="_blank" rel="noopener sponsored">Join ToshiBet</a></div>`;
       renderPodium(); renderRows(); return;
