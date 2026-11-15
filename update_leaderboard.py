@@ -86,7 +86,7 @@ def fetch_json_url(src):
 # ---- ToshiBet affiliate API (the request behind toshi.bet/affiliate > Referrals) ----
 TOSHI_API = "https://user.toshi.bet/referrals"
 NAME_KEYS = ("username", "name", "userName", "user_name", "nickname", "displayName", "display_name")
-WAGER_KEYS = ("wagered", "total_wagered", "totalWagered", "wager", "wagered_amount", "wageredAmount", "total_wager", "wager_amount")
+WAGER_KEYS = ("amount_wagered", "wagered","total_wagered", "totalWagered", "wager", "wagered_amount", "wageredAmount", "total_wager", "wager_amount")
 
 
 def _pick(obj, keys, override):
