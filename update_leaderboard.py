@@ -11,7 +11,7 @@ Python 3.8+, standard library only.
   python update_leaderboard.py --no-git        # write the file only (testing)
   python update_leaderboard.py --force         # skip the safety checks once
 """
-import argparse, csv, io, json, os, subprocess, sys, tempfile, time, urllib.request
+import argparse, csv, io, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,7 +20,18 @@ MIN_LOOP = 300  # GitHub Pages rebuilds on every push; keep well under its build
 
 
 def log(msg):
-    print(datetime.now().strftime("%H:%M:%S"), msg, flush=True)
+    line = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " " + msg
+    if sys.stdout is not None:
+        print(line, flush=True)
+    else:  # running under pythonw (Task Scheduler): no console, so keep a small log file
+        p = HERE / "update.log"
+        try:
+            if p.exists() and p.stat().st_size > 512_000:
+                p.replace(HERE / "update.log.old")
+            with open(p, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except OSError:
+            pass
 
 
 # ---- privacy: must match the hash in index.html exactly ----
@@ -72,9 +83,77 @@ def fetch_json_url(src):
         return json.loads(r.read().decode("utf-8"))
 
 
+# ---- ToshiBet affiliate API (the request behind toshi.bet/affiliate > Referrals) ----
+TOSHI_API = "https://user.toshi.bet/referrals"
+NAME_KEYS = ("username", "name", "userName", "user_name", "nickname", "displayName", "display_name")
+WAGER_KEYS = ("wagered", "total_wagered", "totalWagered", "wager", "wagered_amount", "wageredAmount", "total_wager", "wager_amount")
+
+
+def _pick(obj, keys, override):
+    """Return obj[key] for the configured key (dot path allowed) or the first known key present."""
+    if override:
+        for part in override.split("."):
+            obj = obj[part] if isinstance(obj, dict) else None
+        return obj
+    for k in keys:
+        if isinstance(obj, dict) and obj.get(k) not in (None, ""):
+            return obj[k]
+    for nested in ("user", "referred", "referredUser", "player"):
+        if isinstance(obj, dict) and isinstance(obj.get(nested), dict):
+            v = _pick(obj[nested], keys, None)
+            if v not in (None, ""):
+                return v
+    return None
+
+
+def fetch_toshibet(src):
+    env = src.get("token_env", "TOSHI_TOKEN")
+    tok = os.environ.get(env, "").strip()
+    if not tok:
+        raise RuntimeError(f"environment variable {env} is not set (your ToshiBet login token)")
+    prefix = src.get("token_prefix", "Bearer ")
+    if prefix and tok.lower().startswith(prefix.strip().lower() + " "):
+        prefix = ""  # token was pasted with its prefix already
+    headers = {
+        "Accept": "application/json",
+        "Authorization": prefix + tok,
+        "Origin": "https://toshi.bet",
+        "Referer": "https://toshi.bet/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) xented-leaderboard/1.0",
+    }
+    per_page = int(src.get("per_page", 100))
+    rows, page = [], 1
+    while True:
+        qs = urllib.parse.urlencode({"filter": src.get("filter", "Total Deposited"), "page": page, "perPage": per_page})
+        req = urllib.request.Request(TOSHI_API + "?" + qs, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                raise RuntimeError(f"ToshiBet rejected the token (HTTP {e.code}); it has probably expired. Copy a fresh one into {env}.") from None
+            raise RuntimeError(f"ToshiBet API returned HTTP {e.code}") from None
+        items = data.get("referrals") or []
+        for it in items:
+            name = _pick(it, NAME_KEYS, src.get("name_key"))
+            wager = _pick(it, WAGER_KEYS, src.get("wager_key"))
+            if name is None or wager is None:
+                # show field names only, never values
+                raise RuntimeError("could not find name/wagered fields in a referral; fields are: "
+                                   + ", ".join(sorted(it.keys())) + ". Set name_key / wager_key in config.json.")
+            rows.append((name, wager))
+        pg = data.get("pagination") or {}
+        total = int(pg.get("totalItems", 0) or 0)
+        if not items or page * per_page >= total or page >= 200:
+            return rows
+        page += 1
+
+
 def read_source(cfg):
     src = cfg["source"]
     kind = src["type"]
+    if kind == "toshibet":
+        return fetch_toshibet(src)
     if kind == "csv":
         return rows_from_csv(src["path"])
     if kind == "json_url":

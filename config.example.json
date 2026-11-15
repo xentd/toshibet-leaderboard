@@ -3,8 +3,23 @@
   "period": "November 2026",
   "ends_at": "2026-11-30T23:59:59Z",
   "join_url": "https://toshi.bet/r/toshibetx",
-  "prizes": [2000, 1000, 625, 375, 300, 225, 175, 125, 100, 75],
+  "prizes": [
+    2000,
+    1000,
+    625,
+    375,
+    300,
+    225,
+    175,
+    125,
+    100,
+    75
+  ],
   "top_n": 50,
   "heartbeat_minutes": 30,
-  "source": { "type": "csv", "path": "players.csv" }
+  "source": {
+    "type": "toshibet",
+    "token_env": "TOSHI_TOKEN",
+    "per_page": 100
+  }
 }

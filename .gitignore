@@ -3,3 +3,5 @@ players*.csv
 !players.sample.csv
 *.tmp
 __pycache__/
+update.log
+update.log.old
