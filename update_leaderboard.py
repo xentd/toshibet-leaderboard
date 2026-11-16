@@ -221,11 +221,12 @@ def git(*args):
 
 def push(msg):
     git("add", "leaderboard.json")
-    if git("diff", "--cached", "--quiet").returncode == 0:
-        return
-    c = git("commit", "-m", msg)
-    if c.returncode != 0:
-        raise RuntimeError("git commit: " + (c.stderr or c.stdout).strip()[:300])
+    if git("diff", "--cached", "--quiet").returncode != 0:
+        c = git("commit", "-m", msg)
+        if c.returncode != 0:
+            raise RuntimeError("git commit: " + (c.stderr or c.stdout).strip()[:300])
+    elif git("rev-list", "--count", "@{u}..HEAD").stdout.strip() in ("", "0"):
+        return  # nothing new and nothing left over from a failed push
     for attempt in range(2):
         p = git("push")
         if p.returncode == 0:
